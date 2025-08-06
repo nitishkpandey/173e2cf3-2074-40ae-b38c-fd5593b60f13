@@ -8,7 +8,7 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 
-# --- Load environment variables ---
+# --- Loading environment variables ---
 load_dotenv()
 DB_USER = os.getenv("DB_USER", "energy_user")
 DB_PASS = os.getenv("DB_PASS", "energy_pass")
@@ -22,7 +22,7 @@ parser = argparse.ArgumentParser(description="ETL pipeline mode")
 parser.add_argument("--mode", choices=["append", "truncate", "full-refresh"], default="full-refresh", help="Data load mode")
 args = parser.parse_args()
 
-# --- Wait for DB to be ready ---
+# --- Waiting for DB to be ready ---
 def wait_for_db(max_retries=20, delay=5):
     for i in range(max_retries):
         try:
@@ -44,7 +44,7 @@ def wait_for_db(max_retries=20, delay=5):
 wait_for_db()
 engine = create_engine(DB_URL)
 
-# --- Define API URLs and desired indicators ---
+# --- Defining API URLs and desired indicators ---
 DATASETS = {
     "nrg_cb_e": {
         "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_cb_e?nrg_bal=GEP&lang=EN",
@@ -58,7 +58,7 @@ DATASETS = {
     }
 }
 
-# --- Fetch & transform function ---
+# --- Fetching & transforming function ---
 def fetch_and_transform(dataset_code, url, indicators):
     response = requests.get(url)
     data = response.json()
@@ -131,7 +131,7 @@ def fetch_and_transform(dataset_code, url, indicators):
     print(f"Cleaned data: {len(df)} rows remaining after cleaning.")
     return df
 
-# --- Process all datasets ---
+# --- Processing all datasets into df ---
 all_dataframes = []
 
 for dataset_code, config in DATASETS.items():
@@ -142,11 +142,11 @@ for dataset_code, config in DATASETS.items():
     )
     all_dataframes.append(df)
 
-# --- Concatenate all cleaned dataframes ---
+# --- Concatenating all cleaned dataframes ---
 full_df = pd.concat(all_dataframes, ignore_index=True)
 full_df["load_timestamp"] = datetime.now()
 
-# --- Load to PostgreSQL ---
+# --- Loading to PostgreSQL DB ---
 with engine.begin() as conn:
     if args.mode == "full-refresh":
         conn.execute(text("DROP TABLE IF EXISTS observations"))
@@ -189,3 +189,5 @@ with engine.begin() as conn:
 
 full_df.to_sql("observations", engine, if_exists="append", index=False)
 print(f"Loaded {len(full_df)} rows to 'observations' table.")
+
+
