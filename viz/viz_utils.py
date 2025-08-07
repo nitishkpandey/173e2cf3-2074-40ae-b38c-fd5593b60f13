@@ -6,7 +6,7 @@ import seaborn as sns
 from dotenv import load_dotenv
 from pathlib import Path
 
-# Load .env from project root
+# Loading .env from project root
 dotenv_path = Path(__file__).resolve().parent.parent / '.env'
 load_dotenv(dotenv_path)
 
