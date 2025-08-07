@@ -59,6 +59,14 @@ DATASETS = {
     }
 }
 
+# --- NEW: Auto-detect indicator dimension key ---
+def detect_indicator_dimension(dimensions, indicators):
+    for dim_name, dim_info in dimensions.items():
+        labels = dim_info.get("category", {}).get("label", {})
+        if any(ind in labels for ind in indicators):
+            return dim_name
+    return None
+
 # --- Fetching & transforming function ---
 def fetch_and_transform(dataset_code, url, indicators):
     response = requests.get(url)
@@ -76,6 +84,12 @@ def fetch_and_transform(dataset_code, url, indicators):
     labels = {k: dim[k]['category']['label'] for k in dim if 'category' in dim[k]}
     indexes = [dim[d]['category']['index'] for d in dim_ids]
 
+    # --- Detect indicator dimension dynamically ---
+    indicator_dim = detect_indicator_dimension(dim, indicators)
+    if not indicator_dim:
+        print(f"Could not detect indicator dimension in dataset {dataset_code}")
+        return pd.DataFrame()
+
     def unravel_index(flat_index):
         coords = []
         for size in reversed(sizes):
@@ -89,7 +103,8 @@ def fetch_and_transform(dataset_code, url, indicators):
         keys = [list(indexes[i].keys())[idx[i]] for i in range(len(idx))]
         dim_map = {dim_ids[i]: keys[i] for i in range(len(dim_ids))}
 
-        indicator = dim_map.get("nrg_bal") or dim_map.get("indic_nrg") or dim_map.get("indic_en")
+        # --- Use dynamic indicator dimension ---
+        indicator = dim_map.get(indicator_dim)
         if indicator not in indicators:
             continue
 
@@ -98,11 +113,7 @@ def fetch_and_transform(dataset_code, url, indicators):
             "country_code": dim_map.get("geo"),
             "country_name": labels.get("geo", {}).get(dim_map.get("geo"), dim_map.get("geo")),
             "indicator_code": indicator,
-            "indicator_label": (
-                labels.get("nrg_bal", {}).get(indicator) or
-                labels.get("indic_nrg", {}).get(indicator) or
-                labels.get("indic_en", {}).get(indicator)
-            ),
+            "indicator_label": labels.get(indicator_dim, {}).get(indicator),
             "unit_code": dim_map.get("unit"),
             "unit_label": labels.get("unit", {}).get(dim_map.get("unit")),
             "time": dim_map.get("time"),
@@ -111,6 +122,7 @@ def fetch_and_transform(dataset_code, url, indicators):
 
     print(f"Transformed {len(result)} rows for {dataset_code}")
 
+    # --- Converting to DataFrame and cleaning the data ---
     df = pd.DataFrame(result)
 
     num_duplicates = df.duplicated().sum()
@@ -190,5 +202,3 @@ with engine.begin() as conn:
 
 full_df.to_sql("observations", engine, if_exists="append", index=False)
 print(f"Loaded {len(full_df)} rows to 'observations' table.")
-
-
