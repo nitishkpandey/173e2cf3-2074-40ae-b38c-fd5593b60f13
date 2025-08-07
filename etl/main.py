@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 
-# Load .env from project root
+# Loading .env from project root
 dotenv_path = Path(__file__).resolve().parent.parent / '.env'
 load_dotenv(dotenv_path)
 
@@ -63,7 +63,7 @@ DATASETS = {
     }
 }
 
-# --- NEW: Auto-detect indicator dimension key ---
+# --- Auto-detect indicator dimension key ---
 def detect_indicator_dimension(dimensions, indicators):
     for dim_name, dim_info in dimensions.items():
         labels = dim_info.get("category", {}).get("label", {})
