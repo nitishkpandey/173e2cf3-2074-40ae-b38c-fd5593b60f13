@@ -96,9 +96,9 @@ Important: The .env file is not included in the repository (.gitignore protects 
 
 ### 3. Security & Git Ignore
 
-.env is used to store credentials and never pushed to GitHub
+`.env` is used to store credentials and never pushed to GitHub
 
-.gitignore is used to not push the .env file to GitHub
+`.gitignore` is used to not push the .env file to GitHub
 
 ### 4. Running the ETL Pipeline via Docker Compose
 
