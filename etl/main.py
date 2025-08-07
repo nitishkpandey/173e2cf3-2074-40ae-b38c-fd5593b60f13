@@ -8,17 +8,21 @@ from sqlalchemy import create_engine, text
 from datetime import datetime
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 
-# --- Loading environment variables ---
-load_dotenv()
-DB_USER = os.getenv("DB_USER", "energy_user")
-DB_PASS = os.getenv("DB_PASS", "energy_pass")
-DB_HOST = os.getenv("DB_HOST", "db")
-DB_PORT = os.getenv("DB_PORT", "5432")
-DB_NAME = os.getenv("DB_NAME", "energy")
+
+# Load .env from project root
+dotenv_path = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(dotenv_path)
+
+DB_USER = os.environ["DB_USER"]
+DB_PASS = os.environ["DB_PASS"]
+DB_HOST = os.environ["DB_HOST"]
+DB_PORT = os.environ["DB_PORT"]
+DB_NAME = os.environ["DB_NAME"]
 DB_URL = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-# --- CLI argument for load mode ---
+# --- Command Line Interface (CLI) argument for load mode ---
 parser = argparse.ArgumentParser(description="ETL pipeline mode")
 parser.add_argument("--mode", choices=["append", "truncate", "full-refresh"], default="full-refresh", help="Data load mode")
 args = parser.parse_args()

@@ -4,14 +4,17 @@ from sqlalchemy import create_engine
 import matplotlib.pyplot as plt
 import seaborn as sns
 from dotenv import load_dotenv
+from pathlib import Path
 
-# --- Load environment variables ---
-load_dotenv()
-DB_USER = os.getenv("DB_USER", "energy_user")
-DB_PASS = os.getenv("DB_PASS", "energy_pass")
-DB_HOST = os.getenv("DB_HOST", "db")
-DB_PORT = os.getenv("DB_PORT", "5432")
-DB_NAME = os.getenv("DB_NAME", "energy")
+# Load .env from project root
+dotenv_path = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(dotenv_path)
+
+DB_USER = os.environ["DB_USER"]
+DB_PASS = os.environ["DB_PASS"]
+DB_HOST = os.environ["DB_HOST"]
+DB_PORT = os.environ["DB_PORT"]
+DB_NAME = os.environ["DB_NAME"]
 
 # Create output directory
 OUTPUT_DIR = "outputs"
